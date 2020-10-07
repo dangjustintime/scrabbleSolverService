@@ -15,9 +15,17 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
         fmt.Fprint(w, "Home Route")
 }
 
+func WordsHandler(w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        fmt.Fprint(w, "Words Route")
+}
+
 func main() {
         router := mux.NewRouter()
+
         router.HandleFunc("/", HomeHandler)
+        router.HandleFunc("/words", WordsHandler)
+
         server := &http.Server{
                 Handler: router,
                 Addr: PORT,
