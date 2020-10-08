@@ -1,11 +1,11 @@
 package main
 
 import (
+        "bufio"
         "encoding/json"
         "fmt"
         "github.com/gorilla/mux"
         "io"
-        "io/ioutil"
         "log"
         "net/http"
         "os"
@@ -17,14 +17,6 @@ const PORT = ":8080"
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
         fmt.Fprint(w, "Home Route")
-}
-
-func WordListHandler(w http.ResponseWriter, r *http.Request) {
-        response, err := http.Get("http://recruiting.bluenile.com/words.txt")
-        if err != nil {
-                log.Fatal(err)
-        }
-        fmt.Fprint(w, response)
 }
 
 func WordsHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,12 +51,25 @@ func DownloadFile(filepath string, url string) error {
         return err
 }
 
-func ReadFile(fileName string) {
-        content, err := ioutil.ReadFile(fileName)
+func ReadFile(fileName string) map[string]int {
+        wordsMap := make(map[string]int)
+
+        f, err := os.Open(fileName)
         if err != nil {
                 log.Fatal(err)
         }
-        fmt.Println(string(content))
+        defer f.Close()
+
+        scanner := bufio.NewScanner(f)
+
+        for scanner.Scan() {
+                wordsMap[scanner.Text()] = 1
+        }
+
+        if err := scanner.Err(); err != nil {
+                log.Fatal(err)
+        }
+        return wordsMap
 }
 
 func main() {
@@ -72,7 +77,6 @@ func main() {
 
         router.HandleFunc("/", HomeHandler)
         router.HandleFunc("/words/{word}", WordsHandler)
-        router.HandleFunc("/wordlist", WordListHandler)
 
         server := &http.Server{
                 Handler: router,
@@ -82,6 +86,8 @@ func main() {
         }
 
         fmt.Print("server running...")
+        wordsMap := ReadFile("words.txt")
+        fmt.Print(wordsMap)
         log.Fatal(server.ListenAndServe())
 }
 
