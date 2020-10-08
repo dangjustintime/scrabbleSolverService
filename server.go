@@ -5,6 +5,7 @@ import (
         "fmt"
         "github.com/gorilla/mux"
         "io"
+        "io/ioutil"
         "log"
         "net/http"
         "os"
@@ -58,6 +59,14 @@ func DownloadFile(filepath string, url string) error {
         return err
 }
 
+func ReadFile(fileName string) {
+        content, err := ioutil.ReadFile(fileName)
+        if err != nil {
+                log.Fatal(err)
+        }
+        fmt.Println(string(content))
+}
+
 func main() {
         router := mux.NewRouter()
 
@@ -73,7 +82,6 @@ func main() {
         }
 
         fmt.Print("server running...")
-        DownloadWordList()
         log.Fatal(server.ListenAndServe())
 }
 
