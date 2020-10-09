@@ -14,6 +14,7 @@ import (
 
 // variables
 const PORT = ":8080"
+const TIMEOUTTIME = 10 * time.Second
 var SCRABBLELETTERS = map[string]int{
         "a": 1, "e": 1, "i": 1, "l": 1, "n": 1, "o": 1, "r": 1, "s": 1, "t": 1, "u": 1,
         "d": 2, "g": 2,
@@ -80,6 +81,37 @@ func GetScrabbleScore(word string) int {
         return score
 }
 
+func GetWords(letters []string, wordsMap map[string]int) []string {
+        var words []string
+        for i := 0; i < len(letters); i++ {
+                var newLetters []string
+                newLetters = append(newLetters, letters...)
+                newLetters[i] = newLetters[len(newLetters) - 1]
+                newLetters[len(newLetters) - 1] = ""
+                newLetters = newLetters[:len(newLetters) - 1]
+                var combinations []string
+                GetCombinations(letters[i], combinations, newLetters, wordsMap)
+                copy(words, combinations)
+        }
+        return words
+}
+
+func GetCombinations(word string, words []string, letters []string, wordsMap map[string]int) {
+        if wordsMap[word] != 0 {
+                words = append(words, word)
+        }
+        for i:= 0; i < len(letters); i++ {
+                var newLetters []string
+                newLetters = append(newLetters, letters...)
+                newLetters[i] = newLetters[len(newLetters) - 1]
+                newLetters[len(newLetters) - 1] = ""
+                newLetters = newLetters[:len(newLetters) - 1]
+                newWord := word + letters[i]
+                GetCombinations(newWord, words, newLetters, wordsMap)
+        }
+
+}
+
 // handlers
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
@@ -103,11 +135,12 @@ func main() {
         server := &http.Server{
                 Handler: router,
                 Addr: PORT,
-                WriteTimeout: 10 * time.Second,
-                ReadTimeout: 10 * time.Second,
+                WriteTimeout: TIMEOUTTIME,
+                ReadTimeout: TIMEOUTTIME,
         }
+        words := GetWords([]string{"h", "a", "t"}, ReadFile("words.txt"))
+        fmt.Println(words)
 
-        fmt.Print("server running...")
+        fmt.Println("\n\n\nserver running...")
         log.Fatal(server.ListenAndServe())
 }
-
