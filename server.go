@@ -90,15 +90,15 @@ func GetWords(letters []string, wordsMap map[string]int) []string {
                 newLetters[len(newLetters) - 1] = ""
                 newLetters = newLetters[:len(newLetters) - 1]
                 var combinations []string
-                GetCombinations(letters[i], combinations, newLetters, wordsMap)
-                copy(words, combinations)
+                GetCombinations(letters[i], &combinations, newLetters, wordsMap)
+                words = append(words, combinations...)
         }
         return words
 }
 
-func GetCombinations(word string, words []string, letters []string, wordsMap map[string]int) {
-        if wordsMap[word] != 0 {
-                words = append(words, word)
+func GetCombinations(word string, words *[]string, letters []string, wordsMap map[string]int) {
+        if _, ok := wordsMap[word]; ok {
+                (*words) = append((*words), word)
         }
         for i:= 0; i < len(letters); i++ {
                 var newLetters []string
@@ -109,7 +109,6 @@ func GetCombinations(word string, words []string, letters []string, wordsMap map
                 newWord := word + letters[i]
                 GetCombinations(newWord, words, newLetters, wordsMap)
         }
-
 }
 
 // handlers
