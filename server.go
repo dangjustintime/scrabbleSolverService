@@ -96,6 +96,39 @@ func GetWords(letters []string, wordsMap map[string]int) []string {
         return words
 }
 
+func MergeSort(words []string) []string {
+        if len(words) <= 1 {
+                return words
+        }
+        mid := len(words) / 2
+        left := MergeSort(words[:mid])
+        right := MergeSort(words[mid:])
+        var wordsCopy []string
+        wordsCopy = append(wordsCopy, words...)
+        return Merge(left, right, wordsCopy)
+}
+
+func Merge(left []string, right []string, words []string) []string {
+        leftCursor := 0
+        rightCursor := 0
+        for leftCursor < len(left) && rightCursor < len(right) {
+                if GetScrabbleScore(left[leftCursor]) > GetScrabbleScore(right[rightCursor]) {
+                        words[leftCursor + rightCursor] = left[leftCursor]
+                        leftCursor++
+                } else {
+                        words[leftCursor + rightCursor] = right[rightCursor]
+                        rightCursor++
+                }
+        }
+        for i := leftCursor; i < len(left); i++ {
+                words[leftCursor + rightCursor] = left[leftCursor]
+        }
+        for i := rightCursor; i < len(right); i++ {
+                words[leftCursor + rightCursor] = right[rightCursor]
+        }
+        return words
+}
+
 func GetCombinations(word string, words *[]string, letters []string, wordsMap map[string]int) {
         if _, ok := wordsMap[word]; ok {
                 (*words) = append((*words), word)
@@ -138,7 +171,7 @@ func main() {
                 ReadTimeout: TIMEOUTTIME,
         }
         words := GetWords([]string{"h", "a", "t"}, ReadFile("words.txt"))
-        fmt.Println(words)
+        fmt.Println(MergeSort(words))
 
         fmt.Println("\n\n\nserver running...")
         log.Fatal(server.ListenAndServe())
