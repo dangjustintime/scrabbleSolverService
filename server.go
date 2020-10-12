@@ -91,7 +91,7 @@ func GetScrabbleScore(word string) int {
 }
 
 func GetWords(letters []string, wordsMap map[string]int) []string {
-        var words []string
+        var words []string = []string{}
         for i := 0; i < len(letters); i++ {
                 var newLetters []string
                 newLetters = append(newLetters, letters...)
