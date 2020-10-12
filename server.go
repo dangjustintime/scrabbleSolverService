@@ -13,6 +13,7 @@ import (
 )
 
 // variables
+const FILENAME = "words.txt"
 const PORT = ":8080"
 const TIMEOUTTIME = 10 * time.Second
 var SCRABBLELETTERS = map[string]int{
@@ -26,9 +27,17 @@ var SCRABBLELETTERS = map[string]int{
 }
 
 // file functions
+func FileExists(filename string) bool {
+        info, err := os.Stat(filename)
+        if os.IsNotExist(err) {
+                return false
+        }
+        return !info.IsDir()
+}
+
 func DownloadWordList() {
         fileUrl := "http://recruiting.bluenile.com/words.txt"
-        err := DownloadFile("words.txt", fileUrl)
+        err := DownloadFile(FILENAME, fileUrl)
         if err != nil {
                 panic(err)
         }
@@ -154,7 +163,16 @@ func WordsHandler(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
         params := mux.Vars(r)
         word, _ := params["word"]
-        json.NewEncoder(w).Encode(word)
+        var letters []string
+        for i := 0; i < len(word); i++ {
+                letters = append(letters, string(word[i]))
+        }
+
+        if !FileExists(FILENAME) {
+                DownloadWordList()
+        }
+        words := GetWords(letters, ReadFile(FILENAME))
+        json.NewEncoder(w).Encode(words)
 }
 
 // main
@@ -170,8 +188,6 @@ func main() {
                 WriteTimeout: TIMEOUTTIME,
                 ReadTimeout: TIMEOUTTIME,
         }
-        words := GetWords([]string{"h", "a", "t"}, ReadFile("words.txt"))
-        fmt.Println(MergeSort(words))
 
         fmt.Println("\n\n\nserver running...")
         log.Fatal(server.ListenAndServe())
