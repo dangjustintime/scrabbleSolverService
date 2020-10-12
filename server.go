@@ -100,7 +100,17 @@ func GetWords(letters []string, wordsMap map[string]int) []string {
                 newLetters = newLetters[:len(newLetters) - 1]
                 var combinations []string
                 GetCombinations(letters[i], &combinations, newLetters, wordsMap)
-                words = append(words, combinations...)
+                for j := range combinations {
+                        var hasWord bool = false
+                        for k := range words {
+                                if words[k] == combinations[j] {
+                                        hasWord = true
+                                }
+                        }
+                        if !hasWord {
+                                words = append(words, combinations[j])
+                        }
+                }
         }
         return words
 }
