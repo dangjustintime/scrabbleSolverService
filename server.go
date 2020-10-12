@@ -9,6 +9,7 @@ import (
         "log"
         "net/http"
         "os"
+        "runtime"
         "time"
 )
 
@@ -163,12 +164,21 @@ func GetCombinations(word string, words *[]string, letters []string, wordsMap ma
         }
 }
 
-// handlers
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-        w.WriteHeader(http.StatusOK)
-        fmt.Fprint(w, "Home Route")
+func bToMb(b uint64) uint64 {
+        return b / 1024 / 1024
 }
 
+func PrintMemoryUsage() {
+        var m runtime.MemStats
+        runtime.ReadMemStats(&m)
+
+        fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+        fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+        fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
+        fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
+// handlers
 func WordsHandler(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
         params := mux.Vars(r)
@@ -182,6 +192,7 @@ func WordsHandler(w http.ResponseWriter, r *http.Request) {
                 DownloadWordList()
         }
         words := GetWords(letters, ReadFile(FILENAME))
+        PrintMemoryUsage()
         json.NewEncoder(w).Encode(words)
 }
 
@@ -189,7 +200,6 @@ func WordsHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
         router := mux.NewRouter()
 
-        router.HandleFunc("/", HomeHandler)
         router.HandleFunc("/words/{word}", WordsHandler)
 
         server := &http.Server{
